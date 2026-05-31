@@ -6,7 +6,7 @@
   Из index.js не допускается что то экспортировать
 */
 
-import { createCardElement} from "./components/card.js";
+import { createCardElement, updateLikeState } from "./components/card.js";
 import { openModalWindow, closeModalWindow, setCloseModalWindowEventListeners } from "./components/modal.js";
 import { enableValidation, clearValidation } from "./components/validation.js";
 import { getUserInfo, getCardList, setUserInfo, setUserAvatar, createCard, removeCard, changeLikeCardStatus } from "./components/api.js";
@@ -122,13 +122,12 @@ const handleInfoClick = (cardId) => {
         
         cardInfoModalInfoList.appendChild(likesClone);///
         
-        const usersTitle = document.createElement('div');
-        usersTitle.className = 'popup__info-item';
-        usersTitle.innerHTML = `
-          <dt class="popup__liked_title"><strong>Лайкнули:</strong></dt>
-          <dd class="popup__info-description"></dd>
-        `;
-        cardInfoModalInfoList.appendChild(usersTitle);///
+        const usersTitleTemplate = document.getElementById('popup-info-definition-template');
+        const usersTitleClone = usersTitleTemplate.content.cloneNode(true);
+        const usersTitleTerm = usersTitleClone.querySelector('.popup__info-term');
+        usersTitleTerm.innerHTML = '<strong>Лайкнули:</strong>';
+        usersTitleTerm.classList.add('popup__liked_title');
+        cardInfoModalInfoList.appendChild(usersTitleClone);
 
         const userTemplate = document.getElementById('popup-info-user-preview-template');
         cardData.likes.forEach(like => {
@@ -218,18 +217,18 @@ const handleCardFormSubmit = (evt) => {
     link: cardLinkInput.value,
   })
     .then((cardInformations) => {
-        placesWrap.prepend(
-          createCardElement(cardInformations, {
-            onPreviewPicture: handlePreviewPicture,
-            onLikeIcon: likeCard,
-            onDeleteCard: deleteCard,
-            onInfoClick: handleInfoClick,
-          }, true, false)
-        );
+      placesWrap.prepend(
+        createCardElement(cardInformations, {
+          onPreviewPicture: handlePreviewPicture,
+          onLikeIcon: likeCard,
+          onDeleteCard: deleteCard,
+          onInfoClick: handleInfoClick,
+        }, currentUserId)
+      );
       closeAndClearForm(cardFormModalWindow, cardForm);
     })
     .catch((err) => {
-        console.error(err);
+      console.error(err);
     })
     .finally(() => {
       resetLoading(submitButton, initialText);
@@ -247,13 +246,10 @@ const deleteCard = (cardElement, cardId) => {
 };
 
 const likeCard = (likeButton, cardId) => {
-  const isLiked = likeButton.classList.contains("card__like-button_is-active")
+  const isLiked = likeButton.classList.contains("card__like-button_is-active");
   changeLikeCardStatus(cardId, isLiked)
     .then((cardElement) => {
-      likeButton.classList.toggle("card__like-button_is-active")
-      const thisCard = likeButton.closest('.card')
-      const likeCount = thisCard.querySelector('.card__like-count')
-      likeCount.textContent = cardElement.likes.length;
+      updateLikeState(likeButton, cardElement.likes.length);
     })
     .catch((err) => {
       console.error(err);
@@ -284,7 +280,6 @@ openCardFormButton.addEventListener("click", () => {
   openModalWindow(cardFormModalWindow);
 });
 
-// Wrapper функции для очистки форм при закрытии попапов
 const clearProfileForm = () => clearValidation(profileForm, validationSettings);
 const clearCardForm = () => clearValidation(cardForm, validationSettings);
 const clearAvatarForm = () => clearValidation(avatarForm, validationSettings);
@@ -297,23 +292,24 @@ setCloseModalWindowEventListeners(infoModalWindow);
 
 enableValidation(validationSettings);
 
+let currentUserId;
+
 Promise.all([getCardList(), getUserInfo()])
   .then(([cards, userData]) => {
+    currentUserId = userData._id;
     cards.forEach((card) => {
-      const idOwner = card.owner._id === userData._id
-      const isLiked = card.likes.some(like => like._id === userData._id)
       placesWrap.append(
         createCardElement(card, {
           onPreviewPicture: handlePreviewPicture,
           onLikeIcon: likeCard,
           onDeleteCard: deleteCard,
           onInfoClick: handleInfoClick,
-        }, idOwner, isLiked)
+        }, currentUserId)
       );
     });
     profileTitle.textContent = userData.name;
     profileDescription.textContent = userData.about;
-    profileAvatar.style.backgroundImage = `url(${userData.avatar})` 
+    profileAvatar.style.backgroundImage = `url(${userData.avatar})`;
   })
   .catch((err) => {
     console.error(err);

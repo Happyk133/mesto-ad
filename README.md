@@ -1,5 +1,7 @@
 https://github.com/Happyk133/mesto-ad
 
+**Демо:** https://happyk133.github.io/mesto-ad/
+
 ## Команды
 - 'npm install'
 - 'npm run dev'
