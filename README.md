@@ -1,6 +1,6 @@
 https://github.com/Happyk133/mesto-ad
 
-**Демо:** https://andrey-1917.github.io/mesto-ad/
+**Демо:** https://Happyk133.github.io/mesto-ad/
 
 ## Команды
 - 'npm install'
