@@ -72,8 +72,12 @@ const handleInfoClick = (cardId) => {
       const cardData = cards.find(card => card._id === cardId);
       
       if (cardData) {
-        cardInfoModalInfoList.innerHTML = '';
-        userList.innerHTML = '';
+        while (cardInfoModalInfoList.firstChild) {
+          cardInfoModalInfoList.removeChild(cardInfoModalInfoList.firstChild);
+        }
+        while (userList.firstChild) {
+          userList.removeChild(userList.firstChild);
+        }
         
         const title = cardInfoModalWindow.querySelector('.popup__title');
         title.textContent = 'Информация о карточке';
@@ -125,7 +129,7 @@ const handleInfoClick = (cardId) => {
         const usersTitleTemplate = document.getElementById('popup-info-definition-template');
         const usersTitleClone = usersTitleTemplate.content.cloneNode(true);
         const usersTitleTerm = usersTitleClone.querySelector('.popup__info-term');
-        usersTitleTerm.innerHTML = '<strong>Лайкнули:</strong>';
+        usersTitleTerm.textContent = 'Лайкнули:';
         usersTitleTerm.classList.add('popup__liked_title');
         cardInfoModalInfoList.appendChild(usersTitleClone);
 
