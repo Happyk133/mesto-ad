@@ -1,7 +1,15 @@
+const popupClearHandlers = new Map();
+
 const handleEscUp = (evt) => {
   if (evt.key === "Escape") {
     const activePopup = document.querySelector(".popup_is-opened");
-    closeModalWindow(activePopup);
+    if (activePopup) {
+      const clearFn = popupClearHandlers.get(activePopup);
+      if (typeof clearFn === "function") {
+        clearFn();
+      }
+      closeModalWindow(activePopup);
+    }
   }
 };
 
@@ -15,15 +23,25 @@ export const closeModalWindow = (modalWindow) => {
   document.removeEventListener("keyup", handleEscUp);
 };
 
-export const setCloseModalWindowEventListeners = (modalWindow) => {
-  const closeButtonElement = modalWindow.querySelector(".popup__close")
-  closeButtonElement.addEventListener("click", () => {
+export const setCloseModalWindowEventListeners = (modalWindow, formElement = null, clearFn = null) => {
+  if (typeof clearFn === "function") {
+    popupClearHandlers.set(modalWindow, clearFn);
+  }
+  
+  const closeButtonElement = modalWindow.querySelector(".popup__close");
+  
+  const handleClose = () => {
+    if (typeof clearFn === "function") {
+      clearFn();
+    }
     closeModalWindow(modalWindow);
-  });
+  };
+  
+  closeButtonElement.addEventListener("click", handleClose);
 
   modalWindow.addEventListener("mousedown", (evt) => {
     if (evt.target.classList.contains("popup")) {
-      closeModalWindow(modalWindow);
+      handleClose();
     }
   });
-}
+};

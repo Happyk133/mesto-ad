@@ -27,6 +27,7 @@ const cardLinkInput = cardForm.querySelector(".popup__input_type_url");
 const imageModalWindow = document.querySelector(".popup_type_image");
 const imageElement = imageModalWindow.querySelector(".popup__image");
 const imageCaption = imageModalWindow.querySelector(".popup__caption");
+const infoModalWindow = document.querySelector(".popup_type_info");
 
 const openProfileFormButton = document.querySelector(".profile__edit-button");
 const openCardFormButton = document.querySelector(".profile__add-button");
@@ -39,13 +40,27 @@ const avatarFormModalWindow = document.querySelector(".popup_type_edit-avatar");
 const avatarForm = avatarFormModalWindow.querySelector(".popup__form");
 const avatarInput = avatarForm.querySelector(".popup__input");
 
-// файл index.js
+const validationSettings = {
+  formSelector: ".popup__form",
+  inputSelector: ".popup__input",
+  submitButtonSelector: ".popup__button",
+  inactiveButtonClass: "popup__button_disabled",
+  inputErrorClass: "popup__input_type_error",
+  errorClass: "popup__error_visible",
+};
+
 const formatDate = (date) =>
   date.toLocaleDateString("ru-RU", {
     year: "numeric",
     month: "long",
     day: "numeric",
   });
+
+// Вспомогательная функция для закрытия попапа и очистки формы
+const closeAndClearForm = (modalWindow, formElement) => {
+  clearValidation(formElement, validationSettings);
+  closeModalWindow(modalWindow);
+};
   
 const handleInfoClick = (cardId) => {
   const cardInfoModalWindow = document.querySelector('.popup_type_info');
@@ -126,7 +141,7 @@ const handleInfoClick = (cardId) => {
       }
     })
     .catch((err) => {
-      console.log(err);
+      console.error(err);
     });
 };
 
@@ -161,10 +176,10 @@ const handleProfileFormSubmit = (evt) => {
     .then((userData) => {
       profileTitle.textContent = userData.name;
       profileDescription.textContent = userData.about;
-      closeModalWindow(profileFormModalWindow);
+      closeAndClearForm(profileFormModalWindow, profileForm);
     })
     .catch((err) => {
-      console.log(err);
+      console.error(err);
     })
     .finally(() => {
       resetLoading(submitButton, initialText);
@@ -181,22 +196,22 @@ const handleAvatarFromSubmit = (evt) => {
   setUserAvatar(avatarInput.value)
     .then((userData) => {
       profileAvatar.style.backgroundImage = `url(${userData.avatar})`;
-      closeModalWindow(avatarFormModalWindow);
+      closeAndClearForm(avatarFormModalWindow, avatarForm);
     })
     .catch((err) => {
-      console.log(err);
+      console.error(err);
     })
     .finally(() => {
       resetLoading(submitButton, initialText);
     });
 };
-///
+
 const handleCardFormSubmit = (evt) => {
   evt.preventDefault();
 
   const submitButton = cardForm.querySelector(".popup__button");
   const initialText = submitButton.textContent;
-  setLoading(submitButton, "Сохранение...");
+  setLoading(submitButton, "Создание...");
 
   createCard({
     name: cardNameInput.value,
@@ -211,10 +226,10 @@ const handleCardFormSubmit = (evt) => {
             onInfoClick: handleInfoClick,
           }, true, false)
         );
-      closeModalWindow(cardFormModalWindow);
+      closeAndClearForm(cardFormModalWindow, cardForm);
     })
     .catch((err) => {
-        console.log(err);
+        console.error(err);
     })
     .finally(() => {
       resetLoading(submitButton, initialText);
@@ -227,7 +242,7 @@ const deleteCard = (cardElement, cardId) => {
       cardElement.remove();
     })
     .catch((err) => {
-      console.log(err);
+      console.error(err);
     });
 };
 
@@ -241,7 +256,7 @@ const likeCard = (likeButton, cardId) => {
       likeCount.textContent = cardElement.likes.length;
     })
     .catch((err) => {
-      console.log(err);
+      console.error(err);
     });
 };
 
@@ -253,40 +268,33 @@ avatarForm.addEventListener("submit", handleAvatarFromSubmit);
 openProfileFormButton.addEventListener("click", () => {
   profileTitleInput.value = profileTitle.textContent;
   profileDescriptionInput.value = profileDescription.textContent;
+  clearValidation(profileForm, validationSettings);
   openModalWindow(profileFormModalWindow);
 });
 
 profileAvatar.addEventListener("click", () => {
   avatarForm.reset();
+  clearValidation(avatarForm, validationSettings);
   openModalWindow(avatarFormModalWindow);
 });
 
 openCardFormButton.addEventListener("click", () => {
   cardForm.reset();
+  clearValidation(cardForm, validationSettings);
   openModalWindow(cardFormModalWindow);
 });
 
-// отображение карточек
+// Wrapper функции для очистки форм при закрытии попапов
+const clearProfileForm = () => clearValidation(profileForm, validationSettings);
+const clearCardForm = () => clearValidation(cardForm, validationSettings);
+const clearAvatarForm = () => clearValidation(avatarForm, validationSettings);
 
+setCloseModalWindowEventListeners(profileFormModalWindow, profileForm, clearProfileForm);
+setCloseModalWindowEventListeners(cardFormModalWindow, cardForm, clearCardForm);
+setCloseModalWindowEventListeners(avatarFormModalWindow, avatarForm, clearAvatarForm);
+setCloseModalWindowEventListeners(imageModalWindow);
+setCloseModalWindowEventListeners(infoModalWindow);
 
-//настраиваем обработчики закрытия попапов
-const allPopups = document.querySelectorAll(".popup");
-allPopups.forEach((popup) => {
-  setCloseModalWindowEventListeners(popup);
-});
-
-// Создание объекта с настройками валидации
-const validationSettings = {
-  formSelector: ".popup__form",
-  inputSelector: ".popup__input",
-  submitButtonSelector: ".popup__button",
-  inactiveButtonClass: "popup__button_disabled",
-  inputErrorClass: "popup__input_type_error",
-  errorClass: "popup__error_visible",
-};
-
-// включение валидации вызовом enableValidation
-// все настройки передаются при вызове
 enableValidation(validationSettings);
 
 Promise.all([getCardList(), getUserInfo()])
@@ -305,8 +313,8 @@ Promise.all([getCardList(), getUserInfo()])
     });
     profileTitle.textContent = userData.name;
     profileDescription.textContent = userData.about;
-    profileAvatar.style.backgroundImage = `url(${userData.avatar})` // Код отвечающий за отрисовку полученных данных
+    profileAvatar.style.backgroundImage = `url(${userData.avatar})` 
   })
   .catch((err) => {
-    console.log(err); // В случае возникновения ошибки выводим её в консоль
+    console.error(err);
   });

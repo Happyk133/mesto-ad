@@ -11,9 +11,9 @@ const getResponseData = (res) => {
 }; 
 
 export const getUserInfo = () => {
-  return fetch(`${config.baseUrl}/users/me`, { // Запрос к API-серверу
-    headers: config.headers, // Подставляем заголовки
-  }).then(getResponseData);  // Проверяем успешность выполнения запроса
+  return fetch(`${config.baseUrl}/users/me`, { 
+    headers: config.headers, 
+  }).then(getResponseData);  
 };
 
 export const getCardList = () => {

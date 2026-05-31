@@ -8,6 +8,7 @@ const showInputError = (formElement, inputElement, errorMessage, validationSetti
 const hideInputError = (formElement, inputElement, validationSettings) => {
   const errorElement = formElement.querySelector(`#${inputElement.id}-error`);
   inputElement.classList.remove(validationSettings.inputErrorClass);
+  inputElement.setCustomValidity('');
   errorElement.classList.remove(validationSettings.errorClass);
   errorElement.textContent = '';
 };
@@ -69,10 +70,11 @@ export const clearValidation = (formElement, validationSettings) => {
   const buttonElement = formElement.querySelector(validationSettings.submitButtonSelector);
 
   inputList.forEach((inputElement) => {
-    hideInputError(formElement, inputElement, validationSettings)
-  })
-  disableSubmitButton(buttonElement, validationSettings)
-}
+    hideInputError(formElement, inputElement, validationSettings);
+  });
+  
+  disableSubmitButton(buttonElement, validationSettings);
+};
 
 export const enableValidation = (validationSettings) => {
   const formList = Array.from(document.querySelectorAll(validationSettings.formSelector));
