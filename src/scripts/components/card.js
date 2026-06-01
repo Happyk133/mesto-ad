@@ -12,6 +12,10 @@ export const updateLikeState = (likeButton, likesCount) => {
   likeCountElement.textContent = likesCount;
 };
 
+export const removeCardElement = (cardElement) => {
+  cardElement.remove();
+};
+
 export const createCardElement = (
   data,
   { onPreviewPicture, onLikeIcon, onDeleteCard, onInfoClick },

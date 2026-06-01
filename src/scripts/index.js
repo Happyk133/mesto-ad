@@ -6,7 +6,7 @@
   Из index.js не допускается что то экспортировать
 */
 
-import { createCardElement, updateLikeState } from "./components/card.js";
+import { createCardElement, updateLikeState, removeCardElement } from "./components/card.js";
 import { openModalWindow, closeModalWindow, setCloseModalWindowEventListeners } from "./components/modal.js";
 import { enableValidation, clearValidation } from "./components/validation.js";
 import { getUserInfo, getCardList, setUserInfo, setUserAvatar, createCard, removeCard, changeLikeCardStatus } from "./components/api.js";
@@ -242,7 +242,7 @@ const handleCardFormSubmit = (evt) => {
 const deleteCard = (cardElement, cardId) => {
   removeCard(cardId)
     .then(() => {
-      cardElement.remove();
+      removeCardElement(cardElement);
     })
     .catch((err) => {
       console.error(err);
